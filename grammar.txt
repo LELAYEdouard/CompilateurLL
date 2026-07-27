@@ -1,0 +1,18 @@
+Keyword:
+    + - * / 
+    = 
+    ==
+    !=
+    <
+    >
+    <=
+    >=
+    int
+    print
+    ()
+    ;
+
+Use:
+    int var;
+    int var = 5;
+    print(var);
