@@ -79,6 +79,11 @@ void scanident(int c,char *str){
 
 int keyword(char *str){
     switch(*str){
+        case 'm':
+            if(!strcmp(str,"main")){
+                return T_MAIN;
+            }
+            break;
         case 'p':
             if(!strcmp(str,"print")){
                 return T_PRINT;
@@ -87,6 +92,14 @@ int keyword(char *str){
         case 'i':
             if(!strcmp(str,"int")){
                 return T_INTTYPE;
+            }
+            if(!strcmp(str,"if")){
+                return T_IF;
+            }
+            break;
+        case 'e':
+            if(!strcmp(str,"else")){
+                return T_ELSE;
             }
             break;
     }
@@ -124,6 +137,12 @@ int scan(struct token *t){
             break;
         case ')':
             t->token = T_RBRACKET;
+            break;
+        case '{':
+            t->token = T_LCBRACKET;
+            break;
+        case '}':
+            t->token = T_RCBRACKET;
             break;
         case '=':
             if('=' == (c = next())){

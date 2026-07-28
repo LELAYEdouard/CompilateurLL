@@ -20,9 +20,14 @@ enum {
     T_DIV, // /
     T_EQUALS, // =
     
+    T_MAIN, // main
     T_PRINT, // print
+    T_IF, // if
+    T_ELSE, // else
     T_LBRACKET, // (
     T_RBRACKET, // )
+    T_LCBRACKET, // {
+    T_RCBRACKET, // }
     T_SEMI, // ;
 
     T_INTTYPE, // int

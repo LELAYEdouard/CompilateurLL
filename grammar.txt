@@ -9,10 +9,38 @@ Keyword:
     >=
     int
     print
+    {}
+    if
+    else
     ()
     ;
 
-Use:
-    int var;
-    int var = 5;
-    print(var);
+Grammar:
+    main:      '{' '}'          
+        |      '{' statement '}'
+        |      '{' statement statements '}'
+        ;
+
+    statement: print_statement
+        |     declaration
+        |     assignment_statement
+        |     if_statement
+        ;
+
+    print_statement: 'print' '(' expression ')' ';'  ;
+
+    declaration: 'int' identifier ';'  ;
+        |     'int' assignment_statement ';'  ;
+
+    assignment_statement: identifier '=' expression ';'   ;
+
+    if_statement: if_head
+        |        if_head 'else' compound_statement
+        ;
+
+    if_head: 'if' '(' true_false_expression ')' compound_statement  ;
+
+    compound_statement:  '{' statement '}'
+        |                '{' statement statements '}'
+
+    identifier: T_IDENT ;

@@ -25,10 +25,15 @@ int main(int argc, char *argv[]){
     init();
 
     file = fopen(argv[1],"r");
-    scan(&Token);
+
     preambleASM();
+
+    scan(&Token);
+    match(T_MAIN,"main");
     parseStatements();
+
     postambleASM();
+
     fclose(file);
     exit(0);
 }
@@ -37,6 +42,7 @@ void init(){
     line = 1;
     Putback = '\n';
     lastLstIdent = 0;
+    ifStatementNb = 0;
 }
 
 static void scanfile(){

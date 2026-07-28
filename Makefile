@@ -11,3 +11,13 @@ test:
 
 	./out
 
+testASM:
+	nasm -f elf64 testcode/test.asm
+
+	gcc -no-pie testcode/test.o -o testcode/test
+
+	rm testcode/*.o
+
+	./testcode/test
+
+

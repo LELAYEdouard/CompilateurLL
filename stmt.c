@@ -7,6 +7,8 @@ void parseStatements(){
     int res,reg;
     char *globSymb;
 
+    match(T_LCBRACKET,"{");
+
     while(1){
         switch(Token.token){
             case T_PRINT:
@@ -50,7 +52,6 @@ void parseStatements(){
                         printf("Error at line %d\n",line);
                         exit(1);       
                 }
-
                 break;
             
             case T_IDENTIFIER:
@@ -69,7 +70,41 @@ void parseStatements(){
                 storeGlobalASM(reg,globSymb);
                 match(T_SEMI,";");
                 break;
+            
+            case T_IF:
+                ifStatementNb++;
+                int currentIf = ifStatementNb;
+                
+                match(T_IF,"if");
 
+                match(T_LBRACKET,"(");
+
+                n = parseExpr();
+
+                char *jump;
+                compareForIfASM(n,&jump);
+                freeAllReg();
+
+                match(T_RBRACKET,")");
+
+                ifASM(jump,currentIf);
+
+                parseStatements();
+
+                scan(&Token);
+                
+                elseASM(currentIf);
+                if(Token.token == T_ELSE){
+                    scan(&Token);
+                    parseStatements();
+                }
+
+                endifASM(currentIf);
+                freeAllReg();
+                scan(&Token);
+                break;
+            case T_RCBRACKET:
+                return;
             case T_EOF:
                 return ;
             default:

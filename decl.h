@@ -50,5 +50,10 @@ void printASM(int reg);
 void symbolGlobalASM(char *str);
 int storeGlobalASM(int reg,char *identifier);
 
+int compareForIfASM(struct ASTNode *n,char **jump);
+void ifASM(char *jump,int currentIf);
+void elseASM(int currentIf);
+void endifASM(int currentIf);
+
 int genAST(struct ASTNode *n);
 

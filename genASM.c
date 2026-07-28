@@ -137,6 +137,75 @@ int compareASM(int reg1, int reg2,char *compare){
     return reg2;
 }
 
+int compareForIfASM(struct ASTNode *n,char **jump){
+    int left,right=0;
+    if(n->left){
+        left = compareForIfASM(n->left,jump);
+    }
+    if(n->right){
+        right = compareForIfASM(n->right,jump);
+    }
+
+    switch(n->op){
+        case A_PLUS:
+            return addASM(left,right);
+        case A_MIN:
+            return subASM(left,right);
+        case A_MULT:
+            return multASM(left,right);
+        case A_DIV:
+            return divASM(left,right);
+        case A_INTLT:
+            return loadASM(n->u.intvalue);
+        case A_IDENTIFIER:
+            return loadGlobalASM(lstIdent[n->u.idIdent].identName);
+        case A_OPPOSITE:
+            return subASM(left,right);
+        case A_BOOLDIFF:
+            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            *jump = strdup("je");
+            return 0;
+        case A_BOOLEQ:
+            
+            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            *jump = strdup("jne");
+            return 0;
+        case A_BOOLGE:
+            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            *jump = strdup("jl");
+            return 0;
+        case A_BOOLGT:
+            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            *jump = strdup("jle");
+            return 0;
+        case A_BOOLLE:
+            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            *jump = strdup("jg");
+            return 0;
+        case A_BOOLLT:
+            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            *jump = strdup("jge");
+            return 0;
+        default:
+            exit(1);
+    }
+
+    
+}
+
+void ifASM(char *jump,int currentIf){
+    fprintf(Outfile, "\t%s L%d\n",jump,currentIf);
+}
+
+void elseASM(int currentIf){
+    fprintf(Outfile, "\tjmp Lend%d\n",currentIf);
+    fprintf(Outfile, "\tL%d: \n",currentIf);
+}
+
+void endifASM(int currentIf){
+    fprintf(Outfile, "\tLend%d:\n",currentIf);
+}
+
 //gen code from an AST
 int genAST(struct ASTNode *n){
     int left,right=0;
