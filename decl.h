@@ -39,6 +39,7 @@ void freeAllReg();
 
 void preambleASM();
 void postambleASM();
+void variableASM();
 
 int loadASM(int val);
 int addASM(int reg1,int reg2);

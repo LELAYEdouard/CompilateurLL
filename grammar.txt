@@ -30,6 +30,7 @@ Grammar:
         |     declaration
         |     assignment_statement
         |     if_statement
+        |     while_statement
         ;
 
     print_statement: 'print' '(' expression ')' ';'  ;
@@ -44,5 +45,7 @@ Grammar:
         ;
 
     if_head: 'if' '(' true_false_expression ')' compound_statement  ;
+
+    while_statement: 'while' '(' true_false_expression ')' compound_statement ';' ;
 
     identifier: T_IDENT ;

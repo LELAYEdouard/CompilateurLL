@@ -3,6 +3,7 @@
 #endif
 
 extern_ FILE *Outfile;
+extern_ FILE *Varfile;
 extern_ int line;
 extern_ int Putback;
 extern_ FILE *file;

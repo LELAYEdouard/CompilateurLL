@@ -21,11 +21,16 @@ int main(int argc, char *argv[]){
     if((Outfile = fopen("out.s", "w")) == NULL){
         printf("Unable to create output file\n");
     }
+
+    if((Varfile = fopen("var.s", "w")) == NULL){
+        printf("Unable to create variable file\n");
+    }
     
     init();
 
     file = fopen(argv[1],"r");
-
+    
+    variableASM();
     preambleASM();
 
     scan(&Token);

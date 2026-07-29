@@ -75,6 +75,12 @@ void postambleASM(){
     );
 }
 
+void variableASM(){
+    fputs(
+        "section\t.bss\n",
+    Varfile);
+}
+
 
 int loadASM(int val){
     int reg = allocateReg();
@@ -125,7 +131,7 @@ void printASM(int reg){
 }
 
 void symbolGlobalASM(char *str){
-    fprintf(Outfile, "\tcommon\t%s 8:8\n",str);
+    fprintf(Varfile, "\t%s: resq 1\n",str);
 }
 
 void storeGlobalASM(int reg,char *identifier){
@@ -138,6 +144,7 @@ int loadGlobalASM(char *symbol){
     fprintf(Outfile,"\tmov\t%s, [%s]\n",reglist[reg],symbol);
     return reg;
 }
+
 int compareASM(int reg1, int reg2,char *compare){
     fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[reg1], reglist[reg2]);
     fprintf(Outfile, "\t%s\t%s\n", compare, breglist[reg2]);

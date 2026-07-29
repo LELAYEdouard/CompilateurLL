@@ -1,15 +1,20 @@
-test:
+gll:
 	gcc *.c -o main.o
 
 	./main.o hello.ll
 
-	nasm -f elf64 out.s 
+	cat out.s var.s > gll.s
 
-	gcc -no-pie out.o -o out
+	nasm -f elf64 gll.s 
 
-	rm *.o
+	gcc -no-pie gll.o -o gll
 
-	./out
+	rm *.o var.s out.s
+
+test:
+	make gll
+
+	./gll
 
 testASM:
 	nasm -f elf64 testcode/test.asm
