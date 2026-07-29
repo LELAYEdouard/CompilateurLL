@@ -57,37 +57,56 @@ void parseStatements(){
             case T_IDENTIFIER:
                 globSymb = strdup(Text);
                 match(T_IDENTIFIER,"identifier");
-                match(T_EQUALS,"="); 
 
                 int id = searchSym(globSymb);
                 if(id == -1){
                     printf("Error, symbol %s doesn't exists at line %d\n",globSymb,line);
                     exit(1);
                 }
-                n = parseExpr();
-                reg = genAST(n);
+
+                switch (Token.token){
+                    case T_EQUALS:
+                        match(T_EQUALS,"="); 
+
+                        n = parseExpr();
+                        reg = genAST(n);
+                        
+                        storeGlobalASM(reg,globSymb);
+                        match(T_SEMI,";");
+
+                        break;
+                    
+                    case T_INC:
+                        match(T_INC,"++"); 
+                        incASM(globSymb);
+                        match(T_SEMI,";");
+                        
+                        break;
+                    
+                    case T_DEC:
+                        match(T_DEC,"--"); 
+                        decASM(globSymb);
+                        match(T_SEMI,";");
+
+                        break;  
+                }
                 
-                storeGlobalASM(reg,globSymb);
-                match(T_SEMI,";");
                 break;
             
             case T_IF:
                 ifStatementNb++;
                 int currentIf = ifStatementNb;
+                char *jumpIf;
                 
                 match(T_IF,"if");
 
                 match(T_LBRACKET,"(");
-
                 n = parseExpr();
-
-                char *jump;
-                compareForIfASM(n,&jump);
+                compareForJumpASM(n,&jumpIf);
                 freeAllReg();
-
                 match(T_RBRACKET,")");
 
-                ifASM(jump,currentIf);
+                ifASM(jumpIf,currentIf);
 
                 parseStatements();
 
@@ -100,7 +119,36 @@ void parseStatements(){
                 }
 
                 endifASM(currentIf);
+
+                //jsp encore si c'est bien de le mettre ou pas
                 freeAllReg();
+
+                scan(&Token);
+                break;
+            case T_WHILE:
+                whileStatementNb++;
+                int currentWhile = whileStatementNb;
+                char *jumpW;
+                
+                match(T_WHILE,"while");
+
+                startwhileASM(currentWhile);
+
+                match(T_LBRACKET,"(");
+                n = parseExpr();
+                compareForJumpASM(n,&jumpW);
+                freeAllReg();
+                match(T_RBRACKET,")");
+                
+                whileASM(jumpW,currentWhile);
+
+                parseStatements();
+
+                endwhileASM(currentWhile);
+
+                //jsp encore si c'est bien de le mettre ou pas
+                freeAllReg();
+                
                 scan(&Token);
                 break;
             case T_RCBRACKET:

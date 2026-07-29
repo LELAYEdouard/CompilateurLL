@@ -79,6 +79,11 @@ void scanident(int c,char *str){
 
 int keyword(char *str){
     switch(*str){
+        case 'w':
+            if(!strcmp(str,"while")){
+                return T_WHILE;
+            }
+            break;
         case 'm':
             if(!strcmp(str,"main")){
                 return T_MAIN;
@@ -118,10 +123,24 @@ int scan(struct token *t){
             return 0;
 
         case '+':
-            t->token = T_PLUS;
+            if('+' == (c = next())){
+                t->token = T_INC;
+                break;
+            }
+            else{
+                putback(c);
+                t->token = T_PLUS;
+            }
             break;
         case '-':
-            t->token = T_MIN;
+            if('-' == (c = next())){
+                t->token = T_DEC;
+                break;
+            }
+            else{
+                putback(c);
+                t->token = T_MIN;
+            }
             break;
         case '*':
             t->token = T_MULT;

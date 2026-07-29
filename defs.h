@@ -19,11 +19,14 @@ enum {
     T_MULT,// *
     T_DIV, // /
     T_EQUALS, // =
+    T_INC, //++
+    T_DEC, // --
     
     T_MAIN, // main
     T_PRINT, // print
     T_IF, // if
     T_ELSE, // else
+    T_WHILE, // while
     T_LBRACKET, // (
     T_RBRACKET, // )
     T_LCBRACKET, // {

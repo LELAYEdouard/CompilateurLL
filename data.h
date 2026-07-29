@@ -13,3 +13,4 @@ extern_ char Text[TEXTLEN + 1];
 extern_ struct identifier lstIdent[MAXIDENT];
 extern_ int lastLstIdent;
 extern_ int ifStatementNb;
+extern_ int whileStatementNb;

@@ -45,12 +45,19 @@ int addASM(int reg1,int reg2);
 int subASM(int reg1,int reg2);
 int multASM(int reg1,int reg2);
 int divASM(int reg1,int reg2);
+void incASM(char *identifier);
+void decASM(char *identifier);
 
 void printASM(int reg);
 void symbolGlobalASM(char *str);
-int storeGlobalASM(int reg,char *identifier);
+void storeGlobalASM(int reg,char *identifier);
 
-int compareForIfASM(struct ASTNode *n,char **jump);
+int compareForJumpASM(struct ASTNode *n,char **jump);
+
+void startwhileASM(int currentWhile);
+void whileASM(char *jump,int currentWhile);
+void endwhileASM(int currentWhile);
+
 void ifASM(char *jump,int currentIf);
 void elseASM(int currentIf);
 void endifASM(int currentIf);

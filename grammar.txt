@@ -21,6 +21,11 @@ Grammar:
         |      '{' statement statements '}'
         ;
 
+    compound_statement:  '{' '}'          
+        |                '{' statement '}'
+        |                '{' statement statements '}'
+        ;
+
     statement: print_statement
         |     declaration
         |     assignment_statement
@@ -39,8 +44,5 @@ Grammar:
         ;
 
     if_head: 'if' '(' true_false_expression ')' compound_statement  ;
-
-    compound_statement:  '{' statement '}'
-        |                '{' statement statements '}'
 
     identifier: T_IDENT ;

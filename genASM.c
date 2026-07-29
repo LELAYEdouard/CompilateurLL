@@ -109,6 +109,15 @@ int divASM(int reg1,int reg2){
     return reg1;
 }
 
+void incASM(char *identifier){
+    fprintf(Outfile,"\tinc\tbyte\t[%s]\n",identifier);
+}
+
+void decASM(char *identifier){
+    fprintf(Outfile,"\tdec\tbyte [%s]\n",identifier);
+}
+
+
 void printASM(int reg){
     fprintf(Outfile, "\tmov\trdi, %s\n", reglist[reg]);
     fprintf(Outfile, "\tcall\tprintint\n");
@@ -119,9 +128,9 @@ void symbolGlobalASM(char *str){
     fprintf(Outfile, "\tcommon\t%s 8:8\n",str);
 }
 
-int storeGlobalASM(int reg,char *identifier){
+void storeGlobalASM(int reg,char *identifier){
     fprintf(Outfile,"\tmov\t[%s], %s\n",identifier, reglist[reg]);
-    return reg;
+    freeReg(reg);
 }
 
 int loadGlobalASM(char *symbol){
@@ -137,13 +146,13 @@ int compareASM(int reg1, int reg2,char *compare){
     return reg2;
 }
 
-int compareForIfASM(struct ASTNode *n,char **jump){
+int compareForJumpASM(struct ASTNode *n,char **jump){
     int left,right=0;
     if(n->left){
-        left = compareForIfASM(n->left,jump);
+        left = compareForJumpASM(n->left,jump);
     }
     if(n->right){
-        right = compareForIfASM(n->right,jump);
+        right = compareForJumpASM(n->right,jump);
     }
 
     switch(n->op){
@@ -189,21 +198,32 @@ int compareForIfASM(struct ASTNode *n,char **jump){
         default:
             exit(1);
     }
+}
 
-    
+void startwhileASM(int currentWhile){
+    fprintf(Outfile, "\tW%d:\n",currentWhile);
+}
+
+void whileASM(char *jump,int currentWhile){
+    fprintf(Outfile, "\t%s Wend%d\n",jump,currentWhile);
+}
+
+void endwhileASM(int currentWhile){
+    fprintf(Outfile, "\tjmp W%d\n",currentWhile);
+    fprintf(Outfile, "\tWend%d:\n",currentWhile);
 }
 
 void ifASM(char *jump,int currentIf){
-    fprintf(Outfile, "\t%s L%d\n",jump,currentIf);
+    fprintf(Outfile, "\t%s IF%d\n",jump,currentIf);
 }
 
 void elseASM(int currentIf){
-    fprintf(Outfile, "\tjmp Lend%d\n",currentIf);
-    fprintf(Outfile, "\tL%d: \n",currentIf);
+    fprintf(Outfile, "\tjmp IFend%d\n",currentIf);
+    fprintf(Outfile, "\tIF%d: \n",currentIf);
 }
 
 void endifASM(int currentIf){
-    fprintf(Outfile, "\tLend%d:\n",currentIf);
+    fprintf(Outfile, "\tIFend%d:\n",currentIf);
 }
 
 //gen code from an AST
