@@ -2,7 +2,7 @@
 #include "data.h"
 #include "decl.h"
 
-void parseStatements(){
+void parseStatements(int currentWhile){
     ASTNode *n;
     int res,reg;
     char *globSymb;
@@ -15,7 +15,7 @@ void parseStatements(){
                 match(T_PRINT,"print");
                 match(T_LBRACKET,"(");
         
-                n = parseExpr();
+                n = parseExpression();
                 reg = genAST(n);
                 printASM(reg);
                 freeAllReg();
@@ -39,7 +39,7 @@ void parseStatements(){
                     case T_EQUALS:
                         match(T_EQUALS,"="); 
                         
-                        n = parseExpr();
+                        n = parseExpression();
                         reg = genAST(n);
                         
                         addSym(globSymb);
@@ -68,7 +68,7 @@ void parseStatements(){
                     case T_EQUALS:
                         match(T_EQUALS,"="); 
 
-                        n = parseExpr();
+                        n = parseExpression();
                         reg = genAST(n);
                         
                         storeGlobalASM(reg,globSymb);
@@ -101,21 +101,21 @@ void parseStatements(){
                 match(T_IF,"if");
 
                 match(T_LBRACKET,"(");
-                n = parseExpr();
+                n = parseExpression();
                 compareForJumpASM(n,&jumpIf);
                 freeAllReg();
                 match(T_RBRACKET,")");
 
                 ifASM(jumpIf,currentIf);
 
-                parseStatements();
+                parseStatements(currentWhile);
 
                 scan(&Token);
                 
                 elseASM(currentIf);
                 if(Token.token == T_ELSE){
                     scan(&Token);
-                    parseStatements();
+                    parseStatements(currentWhile);
                 }
 
                 endifASM(currentIf);
@@ -127,7 +127,7 @@ void parseStatements(){
                 break;
             case T_WHILE:
                 whileStatementNb++;
-                int currentWhile = whileStatementNb;
+                
                 char *jumpW;
                 
                 match(T_WHILE,"while");
@@ -135,14 +135,14 @@ void parseStatements(){
                 startwhileASM(currentWhile);
 
                 match(T_LBRACKET,"(");
-                n = parseExpr();
+                n = parseExpression();
                 compareForJumpASM(n,&jumpW);
                 freeAllReg();
                 match(T_RBRACKET,")");
                 
                 whileASM(jumpW,currentWhile);
 
-                parseStatements();
+                parseStatements(whileStatementNb);
 
                 endwhileASM(currentWhile);
 
@@ -151,10 +151,16 @@ void parseStatements(){
                 
                 scan(&Token);
                 break;
+            case T_BREAK:
+                match(T_BREAK,"break");
+                breakwhileASM(currentWhile -1);
+                match(T_SEMI,";");
+                
+                break;
             case T_RCBRACKET:
                 return;
             case T_EOF:
-                return ;
+                return;
             default:
                 printf("Error at line %d\n",line);
                 exit(1);

@@ -162,6 +162,10 @@ int compareForJumpASM(struct ASTNode *n,char **jump){
         right = compareForJumpASM(n->right,jump);
     }
 
+    if(left == -1){
+        return 0;
+    }
+
     switch(n->op){
         case A_PLUS:
             return addASM(left,right);
@@ -180,28 +184,28 @@ int compareForJumpASM(struct ASTNode *n,char **jump){
         case A_BOOLDIFF:
             fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("je");
-            return 0;
+            return -1;
         case A_BOOLEQ:
             
             fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jne");
-            return 0;
+            return -1;
         case A_BOOLGE:
             fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jl");
-            return 0;
+            return -1;
         case A_BOOLGT:
             fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jle");
-            return 0;
+            return -1;
         case A_BOOLLE:
             fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jg");
-            return 0;
+            return -1;
         case A_BOOLLT:
             fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jge");
-            return 0;
+            return -1;
         default:
             exit(1);
     }
@@ -220,13 +224,17 @@ void endwhileASM(int currentWhile){
     fprintf(Outfile, "\tWend%d:\n",currentWhile);
 }
 
+void breakwhileASM(int currentWhile){
+    fprintf(Outfile, "\tjmp Wend%d\n",currentWhile);
+}
+
 void ifASM(char *jump,int currentIf){
-    fprintf(Outfile, "\t%s IF%d\n",jump,currentIf);
+    fprintf(Outfile, "\t%s ELSE%d\n",jump,currentIf);
 }
 
 void elseASM(int currentIf){
     fprintf(Outfile, "\tjmp IFend%d\n",currentIf);
-    fprintf(Outfile, "\tIF%d: \n",currentIf);
+    fprintf(Outfile, "\tELSE%d: \n",currentIf);
 }
 
 void endifASM(int currentIf){
@@ -274,4 +282,3 @@ int genAST(struct ASTNode *n){
             exit(1);
     }
 }
-

@@ -12,7 +12,17 @@ gll:
 	rm *.o var.s out.s
 
 test:
-	make gll
+	gcc *.c -o main.o
+
+	./main.o hello.ll
+
+	cat out.s var.s > gll.s
+
+	nasm -f elf64 gll.s 
+
+	gcc -no-pie gll.o -o gll
+
+	rm *.o
 
 	./gll
 

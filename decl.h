@@ -1,5 +1,6 @@
 //expr
 int getop(int tokenOperator);
+struct ASTNode* parseExpression();
 struct ASTNode* parseExpr();
 struct ASTNode* parseBool();
 struct ASTNode* parseAdd();
@@ -30,7 +31,7 @@ struct ASTNode* mkleaf(int op,int val);
 struct ASTNode* mknode(int op,struct ASTNode *left,struct ASTNode *right,int value);
 
 //stmt
-void parseStatements();
+void parseStatements(int currentWhile);
 
 //genASM
 void freeReg(int reg);
@@ -58,6 +59,7 @@ int compareForJumpASM(struct ASTNode *n,char **jump);
 void startwhileASM(int currentWhile);
 void whileASM(char *jump,int currentWhile);
 void endwhileASM(int currentWhile);
+void breakwhileASM(int currentWhile);
 
 void ifASM(char *jump,int currentIf);
 void elseASM(int currentIf);

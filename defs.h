@@ -27,6 +27,7 @@ enum {
     T_IF, // if
     T_ELSE, // else
     T_WHILE, // while
+    T_BREAK, // break
     T_LBRACKET, // (
     T_RBRACKET, // )
     T_LCBRACKET, // {

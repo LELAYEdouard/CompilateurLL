@@ -15,3 +15,4 @@ extern_ struct identifier lstIdent[MAXIDENT];
 extern_ int lastLstIdent;
 extern_ int ifStatementNb;
 extern_ int whileStatementNb;
+extern_ int maxBool;

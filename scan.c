@@ -79,6 +79,11 @@ void scanident(int c,char *str){
 
 int keyword(char *str){
     switch(*str){
+        case 'b':
+            if(!strcmp(str,"break")){
+                return T_BREAK;
+            }
+            break;
         case 'w':
             if(!strcmp(str,"while")){
                 return T_WHILE;

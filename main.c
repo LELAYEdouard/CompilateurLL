@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 
     scan(&Token);
     match(T_MAIN,"main");
-    parseStatements();
+    parseStatements(whileStatementNb);
 
     postambleASM();
 

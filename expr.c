@@ -30,10 +30,26 @@ int getop(int tokenOperator){
     }
 }
 //scan expression
+struct ASTNode* parseExpression(){
+    struct ASTNode *left;
+    
+    left = parseExpr();
+    maxBool = 0;
+
+    return left;
+}
+//scan expression
 struct ASTNode* parseExpr(){
     struct ASTNode *left;
 
-    left = parseBool();
+    if(maxBool == 0){
+        left = parseBool();
+        printf("%d\n",maxBool);
+    }
+    if(maxBool > 1){
+        printf("Error, more than one boolean statement at line %d\n",line);
+        exit(1);
+    }
 
     return left;
 }
@@ -51,6 +67,7 @@ struct ASTNode* parseBool(){
     }
 
     while(tokentype == T_BOOLEQ || tokentype == T_BOOLDIFF || tokentype == T_BOOLLE || tokentype == T_BOOLGE || tokentype == T_BOOLLT || tokentype == T_BOOLGT){
+        maxBool++;
         scan(&Token);
 
         right = parseAdd();
