@@ -7,6 +7,10 @@ void match(int tok,char *str){
         scan(&Token);
     }
     else{
+        if(!strcmp(str,";")){
+            printf("Error, %s expected at line %d\n",str,line-1);
+            exit(1);
+        }
         printf("Error, %s expected at line %d\n",str,line);
         exit(1);
     }
@@ -14,17 +18,14 @@ void match(int tok,char *str){
 
 void debugINT(int val){
     printf("%d\n",val);
-    exit(1);
 }
 
 void debugSTR(char *val){
     printf("%s\n",val);
-    exit(1);
 }
 
 void debugCHAR(char val){
     printf("%c\n",val);
-    exit(1);
 }
 
 void debug(){

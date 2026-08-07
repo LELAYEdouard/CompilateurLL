@@ -141,8 +141,10 @@ struct ASTNode *parseInt(){
 
             int stackPos = searchFuncSym(Text);
 
+            int local = searchFuncLocal(currentFuncId,Text);
 
-            if(id == -1 && stackPos == -1){
+
+            if(id == -1 && stackPos == -1 && local == -1){
                 printf("Error, symbol %s doesn't exists at line %d\n",Text,line);
                 exit(1);
             }
@@ -152,6 +154,9 @@ struct ASTNode *parseInt(){
             }
             else if(stackPos != -1){
                 n = mkleaf(A_FUNCIDENTIFIER,stackPos);
+            }
+            else if(local != -1){
+                n = mkleaf(A_FUNCLOCAL,local);
             }
             break;
         

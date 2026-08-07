@@ -2,8 +2,12 @@
 #define extern_ extern
 #endif
 
-extern_ FILE *Outfile;
+extern_ FILE *Preamble;
 extern_ FILE *Varfile;
+extern_ FILE *DefFunc_;
+extern_ FILE *Func_;
+extern_ FILE *Functions;
+extern_ FILE *Main;
 extern_ int line;
 extern_ int Putback;
 extern_ FILE *file;
@@ -21,3 +25,5 @@ extern_ struct identifier lstFuncParam[MAXIDENT];
 extern_ int lastLstFuncParam;
 extern_ struct identifier lstFunc[MAXIDENT];
 extern_ int lastLstFunc;
+extern_ int currentFuncId;
+extern_ int hasReturn;

@@ -50,7 +50,7 @@ int searchFuncSym(char *str){
 
 int createFuncSym(){
     if(lastLstFuncParam == MAXIDENT){
-        printf("Error, too many symbols for the function at line %d\n",line);
+        printf("Error, too many parameters for the function at line %d\n",line);
         exit(1);
     }
     lastLstFuncParam++;
@@ -70,7 +70,7 @@ int addFuncSym(char *str,int stackPos){
 
     sym = createFuncSym();
     lstFuncParam[sym].identName = strdup(str);
-    lstFuncParam[sym].u.stackPos = stackPos;
+    lstFuncParam[sym].u.variable.stackPos = 16 + 8*stackPos;
     return sym;
     
 }
@@ -89,7 +89,7 @@ int searchFunc(char *str){
 
 int createFunc(){
     if(lastLstFunc == MAXIDENT){
-        printf("Error, too many symbols for the function at line %d\n",line);
+        printf("Error, too many function at line %d\n",line);
         exit(1);
     }
     lastLstFunc++;
@@ -109,7 +109,48 @@ int addFunc(char *str,int nbArgs){
 
     sym = createFunc();  
     lstFunc[sym].identName = strdup(str);
-    lstFunc[sym].u.nbArgs = nbArgs;
+    lstFunc[sym].u.function.nbArgs = nbArgs;
+    lstFunc[sym].u.function.lastLocFunc = 0;
+    lstFunc[sym].u.function.lstLocFunc = malloc(MAXIDENT * sizeof(lstFunc[sym].u.function.lstLocFunc));
+    return sym;
+    
+}
+
+
+int searchFuncLocal(int idFunc,char *str){
+    
+    for(int id=0;id<lstFunc[idFunc].u.function.lastLocFunc;id++){
+        if(!strcmp(str,lstFunc[idFunc].u.function.lstLocFunc[id].identName)){
+            return id;
+        }
+    }
+    return -1;
+}
+
+
+int createFuncLocal(int idFunc){
+    if(lstFunc[idFunc].u.function.lastLocFunc == MAXIDENT){
+        printf("Error, too many symbols for the function at line %d\n",line);
+        exit(1);
+    }
+    lstFunc[idFunc].u.function.lastLocFunc++;
+
+    return lstFunc[idFunc].u.function.lastLocFunc - 1;
+}
+
+int addFuncLocal(int idFunc,char *str){
+
+    int sym;
+
+    sym = searchFuncLocal(idFunc,str);
+
+    if(sym != -1){
+        return sym;
+    }
+
+    sym = createFuncLocal(idFunc);  
+    lstFunc[idFunc].u.function.lstLocFunc[sym].identName = strdup(str);
+    lstFunc[idFunc].u.function.lstLocFunc[sym].u.variable.stackPos = 8 * (sym+1);
 
     return sym;
     

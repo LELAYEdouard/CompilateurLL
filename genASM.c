@@ -55,7 +55,7 @@ void preambleASM(){
         "\tleave\n"
         "\tret\n"
         "\n",
-    Outfile);
+    Preamble);
 }
 
 void mainASM(){
@@ -63,7 +63,7 @@ void mainASM(){
         "main:\n"
         "\tpush\trbp\n"
         "\tmov	rbp, rsp\n",
-    Outfile);
+    Main);
 }
 // Print out the assembly postamble
 void postambleASM(){
@@ -71,11 +71,11 @@ void postambleASM(){
         "\tmov	eax, 0\n"
         "\tpop	rbp\n"
         "\tret\n",
-    Outfile);
+    Main);
 
     fputs(
         "\nsection .note.GNU-stack noalloc noexec nowrite progbits\n",
-        Outfile
+        Main
     );
 }
 
@@ -88,49 +88,49 @@ void variableASM(){
 
 int loadASM(int val){
     int reg = allocateReg();
-    fprintf(Outfile,"\tmov\t%s, %d\n",reglist[reg],val);
+    fprintf(Main,"\tmov\t%s, %d\n",reglist[reg],val);
     return reg;
 }
 
 int addASM(int reg1,int reg2){
-    fprintf(Outfile,"\tadd\t%s, %s\n",reglist[reg1],reglist[reg2]);
+    fprintf(Main,"\tadd\t%s, %s\n",reglist[reg1],reglist[reg2]);
     freeReg(reg2);
     return reg1;
 }
 
 int subASM(int reg1,int reg2){
-    fprintf(Outfile,"\tsub\t%s, %s\n",reglist[reg1],reglist[reg2]);
+    fprintf(Main,"\tsub\t%s, %s\n",reglist[reg1],reglist[reg2]);
     freeReg(reg2);
     return reg1;
 }
 
 int multASM(int reg1,int reg2){
-    fprintf(Outfile,"\timul\t%s, %s\n",reglist[reg1],reglist[reg2]);
+    fprintf(Main,"\timul\t%s, %s\n",reglist[reg1],reglist[reg2]);
     freeReg(reg2);
     return reg1;
 }
 
 int divASM(int reg1,int reg2){
-    fprintf(Outfile, "\tmov\trax, %s\n", reglist[reg1]);
-    fprintf(Outfile, "\tcqo\n");
-    fprintf(Outfile, "\tidiv\t%s\n", reglist[reg2]);
-    fprintf(Outfile, "\tmov\t%s, rax\n", reglist[reg1]);
+    fprintf(Main, "\tmov\trax, %s\n", reglist[reg1]);
+    fprintf(Main, "\tcqo\n");
+    fprintf(Main, "\tidiv\t%s\n", reglist[reg2]);
+    fprintf(Main, "\tmov\t%s, rax\n", reglist[reg1]);
     freeReg(reg2);
     return reg1;
 }
 
 void incASM(char *identifier){
-    fprintf(Outfile,"\tinc\tbyte\t[%s]\n",identifier);
+    fprintf(Main,"\tinc\tbyte\t[%s]\n",identifier);
 }
 
 void decASM(char *identifier){
-    fprintf(Outfile,"\tdec\tbyte [%s]\n",identifier);
+    fprintf(Main,"\tdec\tbyte [%s]\n",identifier);
 }
 
 
 void printASM(int reg){
-    fprintf(Outfile, "\tmov\trdi, %s\n", reglist[reg]);
-    fprintf(Outfile, "\tcall\tprintint\n");
+    fprintf(Main, "\tmov\trdi, %s\n", reglist[reg]);
+    fprintf(Main, "\tcall\tprintint\n");
     freeAllReg();    
 }
 
@@ -139,33 +139,38 @@ void symbolGlobalASM(char *str){
 }
 
 void storeGlobalASM(int reg,char *identifier){
-    fprintf(Outfile,"\tmov\t[%s], %s\n",identifier, reglist[reg]);
+    fprintf(Main,"\tmov\t[%s], %s\n",identifier, reglist[reg]);
     freeReg(reg);
 }
 
 int loadGlobalASM(char *symbol){
     int reg = allocateReg();
-    fprintf(Outfile,"\tmov\t%s, [%s]\n",reglist[reg],symbol);
+    fprintf(Main,"\tmov\t%s, [%s]\n",reglist[reg],symbol);
     return reg;
 }
 
 int loadFuncGlobalASM(int stackPos){
     int reg = allocateReg();
-    stackPos = 16 + 8*stackPos;
-    fprintf(Outfile,"\tmov\t%s, [rbp+%d]\n",reglist[reg],stackPos);
+    fprintf(Main,"\tmov\t%s, [rbp+%d]\n",reglist[reg],stackPos);
+    return reg;
+}
+
+int loadFuncLocalASM(int stackPos){
+    int reg = allocateReg();
+    fprintf(Main,"\tmov\t%s, [rbp-%d]\n",reglist[reg],stackPos);
     return reg;
 }
 
 int loadReturnFunc(){
     int reg = allocateReg();
-    fprintf(Outfile,"\tmov\t%s, rax\n",reglist[reg]);
+    fprintf(Main,"\tmov\t%s, rax\n",reglist[reg]);
     return reg;
 }
 
 int compareASM(int reg1, int reg2,char *compare){
-    fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[reg1], reglist[reg2]);
-    fprintf(Outfile, "\t%s\t%s\n", compare, breglist[reg2]);
-    fprintf(Outfile, "\tand\t%s,255\n", reglist[reg2]);
+    fprintf(Main, "\tcmp\t%s, %s\n", reglist[reg1], reglist[reg2]);
+    fprintf(Main, "\t%s\t%s\n", compare, breglist[reg2]);
+    fprintf(Main, "\tand\t%s,255\n", reglist[reg2]);
     freeReg(reg1);
     return reg2;
 }
@@ -197,32 +202,34 @@ int compareForJumpASM(struct ASTNode *n,char **jump){
         case A_IDENTIFIER:
             return loadGlobalASM(lstIdent[n->u.idIdent].identName);
         case A_FUNCIDENTIFIER:
-            return loadFuncGlobalASM(lstFuncParam[n->u.idIdent].u.stackPos);
+            return loadFuncGlobalASM(lstFuncParam[n->u.idIdent].u.variable.stackPos);
+        case A_FUNCLOCAL:
+            return loadFuncLocalASM(lstFunc[currentFuncId].u.variable.stackPos);
         case A_OPPOSITE:
             return subASM(left,right);
         case A_BOOLDIFF:
-            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            fprintf(Main, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("je");
             return -1;
         case A_BOOLEQ:
             
-            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            fprintf(Main, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jne");
             return -1;
         case A_BOOLGE:
-            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            fprintf(Main, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jl");
             return -1;
         case A_BOOLGT:
-            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            fprintf(Main, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jle");
             return -1;
         case A_BOOLLE:
-            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            fprintf(Main, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jg");
             return -1;
         case A_BOOLLT:
-            fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
+            fprintf(Main, "\tcmp\t%s, %s\n", reglist[left], reglist[right]);
             *jump = strdup("jge");
             return -1;
         default:
@@ -231,57 +238,66 @@ int compareForJumpASM(struct ASTNode *n,char **jump){
 }
 
 void startwhileASM(int currentWhile){
-    fprintf(Outfile, "\tW%d:\n",currentWhile);
+    fprintf(Main, "\tW%d:\n",currentWhile);
 }
 
 void whileASM(char *jump,int currentWhile){
-    fprintf(Outfile, "\t%s Wend%d\n",jump,currentWhile);
+    fprintf(Main, "\t%s Wend%d\n",jump,currentWhile);
 }
 
 void endwhileASM(int currentWhile){
-    fprintf(Outfile, "\tjmp W%d\n",currentWhile);
-    fprintf(Outfile, "\tWend%d:\n",currentWhile);
+    fprintf(Main, "\tjmp W%d\n",currentWhile);
+    fprintf(Main, "\tWend%d:\n",currentWhile);
 }
 
 void breakwhileASM(int currentWhile){
-    fprintf(Outfile, "\tjmp Wend%d\n",currentWhile);
+    fprintf(Main, "\tjmp Wend%d\n",currentWhile);
 }
 
 void ifASM(char *jump,int currentIf){
-    fprintf(Outfile, "\t%s ELSE%d\n",jump,currentIf);
+    fprintf(Main, "\t%s ELSE%d\n",jump,currentIf);
 }
 
 void elseASM(int currentIf){
-    fprintf(Outfile, "\tjmp IFend%d\n",currentIf);
-    fprintf(Outfile, "\tELSE%d: \n",currentIf);
+    fprintf(Main, "\tjmp IFend%d\n",currentIf);
+    fprintf(Main, "\tELSE%d: \n",currentIf);
 }
 
 void endifASM(int currentIf){
-    fprintf(Outfile, "\tIFend%d:\n",currentIf);
+    fprintf(Main, "\tIFend%d:\n",currentIf);
 }
 
 void definefuncASM(char *func){
-    fprintf(Outfile,"%s:\n",func);
-    fprintf(Outfile,"\tpush\trbp\n");
-    fprintf(Outfile,"\tmov\trbp, rsp\n");
+    fprintf(Main,"%s:\n",func);
+    fprintf(Main,"\tpush\trbp\n");
+    fprintf(Main,"\tmov\trbp, rsp\n");
 }
 
 void endfuncASM(){
-    fprintf(Outfile,"\tpop\trbp\n");
-    fprintf(Outfile,"\tret\n");
+    fprintf(Main,"\tleave\n");
+    fprintf(Main,"\tret\n");
 }
 
 void returnASM(int reg){
-    fprintf(Outfile,"\tmov rax, %s\n",reglist[reg]);
+    fprintf(Main,"\tmov rax, %s\n",reglist[reg]);
 }
 
 void callFuncASM(char *str,int nbArgs){
-    fprintf(Outfile,"\tcall %s\n",str);
-    fprintf(Outfile,"\tadd rsp, %d\n",nbArgs*8);
+    fprintf(Main,"\tcall %s\n",str);
+    fprintf(Main,"\tadd rsp, %d\n",nbArgs*8);
 }
 
 void pushASM(int reg){
-    fprintf(Outfile,"\tpush %s\n",reglist[reg]);
+    fprintf(Main,"\tpush %s\n",reglist[reg]);
+    freeReg(reg);
+}
+
+void initFuncLocalASM(int stackPos){
+    fprintf(Main,"\tmov\tQWORD [rbp-%d], 0\n",stackPos);
+}
+
+void setFuncLocalASM(int stackPos,int reg){
+    fprintf(Main,"\tmov\tQWORD [rbp-%d], %s\n",stackPos,reglist[reg]);
     freeReg(reg);
 }
 
@@ -309,7 +325,9 @@ int genAST(struct ASTNode *n){
         case A_IDENTIFIER:
             return loadGlobalASM(lstIdent[n->u.idIdent].identName);
         case A_FUNCIDENTIFIER:
-            return loadFuncGlobalASM(lstFuncParam[n->u.idIdent].u.stackPos);
+            return loadFuncGlobalASM(lstFuncParam[n->u.idIdent].u.variable.stackPos);
+        case A_FUNCLOCAL:
+            return loadFuncLocalASM(lstFunc[currentFuncId].u.function.lstLocFunc[n->u.intvalue].u.variable.stackPos);
         case A_OPPOSITE:
             return subASM(left,right);
         case A_BOOLDIFF:

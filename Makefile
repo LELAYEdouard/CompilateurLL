@@ -16,7 +16,7 @@ test:
 
 	./main.o hello.ll
 
-	cat out.s var.s > gll.s
+	cat preamble.s functions.s main.s var.s > gll.s
 
 	nasm -f elf64 gll.s 
 

@@ -16,8 +16,16 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-    if((Outfile = fopen("out.s", "w")) == NULL){
-        printf("Unable to create output file\n");
+    if((Preamble = fopen("preamble.s", "w")) == NULL){
+        printf("Unable to create preamble file\n");
+    }
+
+    if((Functions = fopen("functions.s", "w")) == NULL){
+        printf("Unable to create function file\n");
+    }
+
+    if((Main = fopen("main.s", "w")) == NULL){
+        printf("Unable to create main file\n");
     }
 
     if((Varfile = fopen("var.s", "w")) == NULL){
@@ -40,6 +48,8 @@ int main(int argc, char *argv[]){
 
     //avoid func create
     funcDef = 0;
+    //avoid local var
+    currentFuncId = -1;
     mainASM();
     match(T_MAIN,"main");
     parseStatements(whileStatementNb);
@@ -57,6 +67,8 @@ void init(){
     lastLstFuncParam = 0;
     lastLstFunc = 0;
     ifStatementNb = 0;
-    whileStatementNb=0;
-    funcDef=1;
+    whileStatementNb = 0;
+    funcDef = 1;
+    currentFuncId = 0;
+    hasReturn = 0;
 }

@@ -59,6 +59,11 @@ void pushParameters(int nbArgs){
 
         switch (Token.token){
             case T_RBRACKET:
+                if(i != nbArgs){
+                    printf("Error, %d parameters missing at line %d\n",nbArgs - i,line);
+                    exit(1);
+                }
+
                 match(T_RBRACKET,")");
                 for(int j = nbArgs-1; j >= 0; j--){
                     reg = genAST(lstArgs[j]);
@@ -73,4 +78,5 @@ void pushParameters(int nbArgs){
                 exit(1);
         }
     }
+    match(T_RBRACKET,")");
 }

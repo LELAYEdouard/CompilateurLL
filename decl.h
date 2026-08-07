@@ -21,6 +21,10 @@ int searchFunc(char *str);
 int createFunc();
 int addFunc(char *str,int nbArgs);
 
+int searchFuncLocal(int idFunc,char *str);
+int createFuncLocal(int idFunc);
+int addFuncLocal(int idFunc,char *str);
+
 //scan
 void scanident(int c,char *str);
 int keyword(char *str);
@@ -86,6 +90,8 @@ void endfuncASM();
 void returnASM(int reg);
 void callFuncASM(char *str,int nbArgs);
 void pushASM(int reg);
+void initFuncLocalASM(int stackPos);
+void setFuncLocalASM(int stackPos,int reg);
 
 int genAST(struct ASTNode *n);
 

@@ -13,6 +13,7 @@ struct token {
 };
 
 enum {
+    T_DEBUG, // debug compilation
     T_EOF, // EOF
     T_PLUS, // +
     T_MIN, // -
@@ -70,6 +71,7 @@ enum {
     A_INTLT,
     A_IDENTIFIER,
     A_FUNCIDENTIFIER,
+    A_FUNCLOCAL,
 
     A_BOOLEQ, 
     A_BOOLDIFF,
@@ -82,9 +84,16 @@ enum {
 struct identifier {
     char *identName;
     union{
-        int nbArgs; // function nb parameters
-        char **lstLocFunc; // local function variable
-        int lastLocFunc; // local function variable
-        int stackPos; //function parameter
+
+        struct {
+            int nbArgs; // function nb parameters
+            struct identifier *lstLocFunc; // local function variable
+            int lastLocFunc; // local function variable
+        } function;
+
+        struct{
+            int stackPos; //function parameter
+        }variable;
+        
     }u;
 };

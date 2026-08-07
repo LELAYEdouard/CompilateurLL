@@ -36,12 +36,22 @@ void parseStatements(int currentWhile){
                     printf("Error, function %s already exists\n",globSymb);
                     exit(1);
                 }
+                if(searchFuncLocal(currentFuncId,globSymb) != -1){
+                    printf("Error, local variable %s already exists in function %s\n",globSymb,lstFunc[currentFuncId].identName);
+                    exit(1);
+                }
                 match(T_IDENTIFIER,"identifier");
 
                 switch(Token.token){
                     case T_SEMI:
-                        addSym(globSymb);
-                        symbolGlobalASM(globSymb);
+                        if(currentFuncId != -1){ // in a function
+                            int idFuncLocal = addFuncLocal(currentFuncId,globSymb);
+                            initFuncLocalASM(lstFunc[currentFuncId].u.function.lstLocFunc[idFuncLocal].u.variable.stackPos);
+                        }
+                        else{ // in main
+                            addSym(globSymb);
+                            symbolGlobalASM(globSymb);
+                        }
                         match(T_SEMI,";");
                         
                         break;
@@ -51,11 +61,12 @@ void parseStatements(int currentWhile){
                         char *varName = strdup(globSymb);
 
                         globSymb = strdup(Text);
-                        int find = searchFunc(globSymb); 
-
-                        if(find != -1){
+                        int findFunc = searchFunc(globSymb); 
+                        
+                        //if it's a function, put in reg the result of the function
+                        if(findFunc != -1){ 
                             scan(&Token);
-                            int nbArgs = lstFunc[find].u.nbArgs;
+                            int nbArgs = lstFunc[findFunc].u.function.nbArgs;
                             pushParameters(nbArgs);
 
                             callFuncASM(globSymb,nbArgs);
@@ -67,11 +78,19 @@ void parseStatements(int currentWhile){
                             n = parseExpression();
                             reg = genAST(n);
                         }
-
-                        addSym(varName);
-                        symbolGlobalASM(varName);
-                        storeGlobalASM(reg,varName);
+                        // if we are in a function
+                        if(currentFuncId != -1){
                         
+                            int idFuncLocal = addFuncLocal(currentFuncId,varName);
+                            setFuncLocalASM(lstFunc[currentFuncId].u.function.lstLocFunc[idFuncLocal].u.variable.stackPos,reg);
+                            
+                        }//in main
+                        else{
+                            addSym(varName);
+                            symbolGlobalASM(varName);
+                            storeGlobalASM(reg,varName);
+                        }
+
                         match(T_SEMI,";");
                         break;
                     case T_LBRACKET:
@@ -83,12 +102,7 @@ void parseStatements(int currentWhile){
                             printf("Error at line %d, can't initialize functions inside a function\n",line);
                             exit(1);
                         }
-                        // int tokentype = keyword(globSymb);
-                        // if(tokentype){
-                        //     printf("Error at line %d, %s already exists\n",line,globSymb);
-                        //     exit(1);
-                        // }
-
+                        
                         definefuncASM(globSymb);
                         
                         int nbArgs = findParameters();
@@ -96,9 +110,24 @@ void parseStatements(int currentWhile){
                         addFunc(globSymb,nbArgs);
                         
                         funcDef = 2;
+
                         parseStatements(currentWhile);
 
+                        if(!hasReturn){
+                            printf("Error, no return at line %d\n",line);
+                            exit(1);
+                        }
+                        else{
+                            hasReturn =0;
+                        }
+                        
+                        //reserve space for local variable
+
+                        //allows to redefine a new function
                         funcDef =1;
+
+                        //set the current function to the next one (allows definiton of local variable)
+                        currentFuncId++;
 
                         scan(&Token);
                         break;
@@ -159,11 +188,12 @@ void parseStatements(int currentWhile){
                             printf("Error, function %s doesn't exists at line %d\n",globSymb,line);
                             exit(1);
                         }
-                        int nbArgs = lstFunc[searchFunc(globSymb)].u.nbArgs;
+                        int nbArgs = lstFunc[searchFunc(globSymb)].u.function.nbArgs;
                         pushParameters(nbArgs);
+                        
 
                         callFuncASM(globSymb,nbArgs);
-
+                        
                         match(T_SEMI,";");
                         break;
                     default:
@@ -244,6 +274,7 @@ void parseStatements(int currentWhile){
                 returnASM(reg);
                 
                 match(T_SEMI,";");
+                hasReturn = 1;
 
                 endfuncASM();
                 break;
@@ -251,6 +282,8 @@ void parseStatements(int currentWhile){
                 return;
             case T_EOF:
                 return;
+            case T_DEBUG:
+                debug();
             default:
                 printf("Error at line %d token at wrong place\n",line);
                 exit(1);
