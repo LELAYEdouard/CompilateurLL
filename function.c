@@ -66,8 +66,8 @@ void pushParameters(int nbArgs){
 
                 match(T_RBRACKET,")");
                 for(int j = nbArgs-1; j >= 0; j--){
-                    reg = genAST(lstArgs[j]);
-                    pushASM(reg);
+                    reg = genAST(currentFile,lstArgs[j]);
+                    pushASM(currentFile,reg);
                 }
                 return;
             case T_COMMA:

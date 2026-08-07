@@ -4,10 +4,11 @@
 
 extern_ FILE *Preamble;
 extern_ FILE *Varfile;
-extern_ FILE *DefFunc_;
-extern_ FILE *Func_;
 extern_ FILE *Functions;
 extern_ FILE *Main;
+extern_ FILE *Head;
+extern_ FILE *Body;
+extern_ FILE *currentFile;
 extern_ int line;
 extern_ int Putback;
 extern_ FILE *file;

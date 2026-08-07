@@ -50,12 +50,14 @@ int main(int argc, char *argv[]){
     funcDef = 0;
     //avoid local var
     currentFuncId = -1;
+    
+    currentFile = getCurrentFile(0);
     mainASM();
     match(T_MAIN,"main");
     parseStatements(whileStatementNb);
 
     postambleASM();
-
+    fclose(currentFile);
     fclose(file);
     exit(0);
 }
@@ -71,4 +73,5 @@ void init(){
     funcDef = 1;
     currentFuncId = 0;
     hasReturn = 0;
+    
 }

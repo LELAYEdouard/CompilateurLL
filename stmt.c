@@ -8,7 +8,7 @@ void parseStatements(int currentWhile){
     char *globSymb;
 
     match(T_LCBRACKET,"{");
-
+    
     while(1){
 
         switch(Token.token){
@@ -17,8 +17,8 @@ void parseStatements(int currentWhile){
                 match(T_LBRACKET,"(");
         
                 n = parseExpression();
-                reg = genAST(n);
-                printASM(reg);
+                reg = genAST(currentFile,n);
+                printASM(currentFile,reg);
                 freeAllReg();
 
                 match(T_RBRACKET,")");
@@ -46,7 +46,7 @@ void parseStatements(int currentWhile){
                     case T_SEMI:
                         if(currentFuncId != -1){ // in a function
                             int idFuncLocal = addFuncLocal(currentFuncId,globSymb);
-                            initFuncLocalASM(lstFunc[currentFuncId].u.function.lstLocFunc[idFuncLocal].u.variable.stackPos);
+                            initFuncLocalASM(currentFile,lstFunc[currentFuncId].u.function.lstLocFunc[idFuncLocal].u.variable.stackPos);
                         }
                         else{ // in main
                             addSym(globSymb);
@@ -69,26 +69,26 @@ void parseStatements(int currentWhile){
                             int nbArgs = lstFunc[findFunc].u.function.nbArgs;
                             pushParameters(nbArgs);
 
-                            callFuncASM(globSymb,nbArgs);
+                            callFuncASM(currentFile,globSymb,nbArgs);
                             
-                            reg = loadReturnFunc();
+                            reg = loadReturnFunc(currentFile);
                             
                         }
                         else{
                             n = parseExpression();
-                            reg = genAST(n);
+                            reg = genAST(currentFile,n);
                         }
                         // if we are in a function
                         if(currentFuncId != -1){
                         
                             int idFuncLocal = addFuncLocal(currentFuncId,varName);
-                            setFuncLocalASM(lstFunc[currentFuncId].u.function.lstLocFunc[idFuncLocal].u.variable.stackPos,reg);
+                            setFuncLocalASM(currentFile,lstFunc[currentFuncId].u.function.lstLocFunc[idFuncLocal].u.variable.stackPos,reg);
                             
                         }//in main
                         else{
                             addSym(varName);
                             symbolGlobalASM(varName);
-                            storeGlobalASM(reg,varName);
+                            storeGlobalASM(currentFile,reg,varName);
                         }
 
                         match(T_SEMI,";");
@@ -103,11 +103,17 @@ void parseStatements(int currentWhile){
                             exit(1);
                         }
                         
-                        definefuncASM(globSymb);
                         
+
                         int nbArgs = findParameters();
                         
                         addFunc(globSymb,nbArgs);
+                        currentFile = getCurrentFile(0);
+                        
+                        //defition of the function
+                        FILE *head = getCurrentFile(1);
+                        definefuncASM(head,globSymb);
+                        
                         
                         funcDef = 2;
 
@@ -120,14 +126,35 @@ void parseStatements(int currentWhile){
                         else{
                             hasReturn =0;
                         }
-                        
-                        //reserve space for local variable
 
+                        //reserve space for local variable;
+                        localSpaceASM(head,lstFunc[currentFuncId].u.function.lastLocFunc);
+
+                        //concat head and body file into functions file
+                        int c;
+                        rewind(head);
+                        rewind(currentFile);
+
+                        Functions = fopen("functions.s","w");
+
+                        while((c = fgetc(head)) != EOF){
+                            fputc(c,Functions);
+                        }
+                    
+                        while((c = fgetc(currentFile)) != EOF){
+                            fputc(c,Functions);
+                        }
+                        
                         //allows to redefine a new function
                         funcDef =1;
 
                         //set the current function to the next one (allows definiton of local variable)
                         currentFuncId++;
+
+                        //close the "temporary" files
+                        fclose(head);
+                        fclose(currentFile);
+                        fclose(Functions);
 
                         scan(&Token);
                         break;
@@ -152,12 +179,32 @@ void parseStatements(int currentWhile){
                             printf("Error, symbol %s doesn't exists at line %d\n",globSymb,line);
                             exit(1);
                         }
+                        char *varName= strdup(globSymb);
                         match(T_EQUALS,"="); 
 
-                        n = parseExpression();
-                        reg = genAST(n);
+                        globSymb = strdup(Text);
+                        int findFunc = searchFunc(globSymb);
+                        //if it's a function, put in reg the result of the function
+                        if(findFunc != -1){ 
+                            scan(&Token);
+
+                            int nbArgs = lstFunc[findFunc].u.function.nbArgs;
+
+                            pushParameters(nbArgs);
+
+                            callFuncASM(currentFile,globSymb,nbArgs);
+                            
+                            reg = loadReturnFunc(currentFile);
+                            // scan(&Token);
+                            
+                        }
+                        else{
+                            n = parseExpression();
+                            reg = genAST(currentFile,n);
+                        }
+
                         
-                        storeGlobalASM(reg,globSymb);
+                        storeGlobalASM(currentFile,reg,varName);
                         match(T_SEMI,";");
 
                         break;
@@ -168,7 +215,7 @@ void parseStatements(int currentWhile){
                             exit(1);
                         }
                         match(T_INC,"++"); 
-                        incASM(globSymb);
+                        incASM(currentFile,globSymb);
                         match(T_SEMI,";");
                         
                         break;
@@ -179,7 +226,7 @@ void parseStatements(int currentWhile){
                             exit(1);
                         }
                         match(T_DEC,"--"); 
-                        decASM(globSymb);
+                        decASM(currentFile,globSymb);
                         match(T_SEMI,";");
 
                         break;  
@@ -192,7 +239,7 @@ void parseStatements(int currentWhile){
                         pushParameters(nbArgs);
                         
 
-                        callFuncASM(globSymb,nbArgs);
+                        callFuncASM(currentFile,globSymb,nbArgs);
                         
                         match(T_SEMI,";");
                         break;
@@ -212,24 +259,26 @@ void parseStatements(int currentWhile){
 
                 match(T_LBRACKET,"(");
                 n = parseExpression();
-                compareForJumpASM(n,&jumpIf);
+                compareForJumpASM(currentFile,n,&jumpIf);
+                
                 freeAllReg();
                 match(T_RBRACKET,")");
 
-                ifASM(jumpIf,currentIf);
-
+                ifASM(currentFile,jumpIf,currentIf);
                 parseStatements(currentWhile);
+                
 
                 scan(&Token);
                 
-                elseASM(currentIf);
+                elseASM(currentFile,currentIf);
+                
                 if(Token.token == T_ELSE){
                     scan(&Token);
                     parseStatements(currentWhile);
                     scan(&Token);
                 }
 
-                endifASM(currentIf);
+                endifASM(currentFile,currentIf);
 
                 //jsp encore si c'est bien de le mettre ou pas
                 freeAllReg();
@@ -242,19 +291,19 @@ void parseStatements(int currentWhile){
                 
                 match(T_WHILE,"while");
 
-                startwhileASM(currentWhile);
+                startwhileASM(currentFile,currentWhile);
 
                 match(T_LBRACKET,"(");
                 n = parseExpression();
-                compareForJumpASM(n,&jumpW);
+                compareForJumpASM(currentFile,n,&jumpW);
                 freeAllReg();
                 match(T_RBRACKET,")");
                 
-                whileASM(jumpW,currentWhile);
+                whileASM(currentFile,jumpW,currentWhile);
 
                 parseStatements(whileStatementNb);
 
-                endwhileASM(currentWhile);
+                endwhileASM(currentFile,currentWhile);
 
                 //jsp encore si c'est bien de le mettre ou pas
                 freeAllReg();
@@ -263,20 +312,20 @@ void parseStatements(int currentWhile){
                 break;
             case T_BREAK:
                 match(T_BREAK,"break");
-                breakwhileASM(currentWhile -1);
+                breakwhileASM(currentFile,currentWhile -1);
                 match(T_SEMI,";");
                 
                 break;
             case T_RETURN:
                 match(T_RETURN,"return");
                 n = parseExpression();
-                reg = genAST(n);
-                returnASM(reg);
+                reg = genAST(currentFile,n);
+                returnASM(currentFile,reg);
                 
                 match(T_SEMI,";");
                 hasReturn = 1;
 
-                endfuncASM();
+                endfuncASM(currentFile);
                 break;
             case T_RCBRACKET:
                 return;

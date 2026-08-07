@@ -9,7 +9,9 @@ gll:
 
 	gcc -no-pie gll.o -o gll
 
-	rm *.o var.s out.s
+	rm *.o 
+
+	rm *.s
 
 test:
 	gcc *.c -o main.o -Wall
@@ -23,6 +25,8 @@ test:
 	gcc -no-pie gll.o -o gll
 
 	rm *.o
+	
+	find . -maxdepth 1 -name "*.s" ! -name "gll.s" ! -name "functions.s" -delete
 
 	./gll
 

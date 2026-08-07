@@ -2,6 +2,24 @@
 #include "data.h"
 #include "decl.h"
 
+FILE *getCurrentFile(int isHead){
+    char filename[128];
+    if(currentFuncId == -1){
+        return Main;
+    }else{
+        if(isHead){
+            snprintf(filename, sizeof(filename), "head_%s.s", lstFunc[currentFuncId].identName);
+        }
+        else{
+            snprintf(filename, sizeof(filename), "body_%s.s", lstFunc[currentFuncId].identName);
+        }
+        
+    }
+
+    FILE *f = fopen(filename, "w+");
+    return f;
+}
+
 void match(int tok,char *str){
     if(Token.token == tok){
         scan(&Token);
