@@ -16,3 +16,8 @@ extern_ int lastLstIdent;
 extern_ int ifStatementNb;
 extern_ int whileStatementNb;
 extern_ int maxBool;
+extern_ int funcDef;
+extern_ struct identifier lstFuncParam[MAXIDENT];
+extern_ int lastLstFuncParam;
+extern_ struct identifier lstFunc[MAXIDENT];
+extern_ int lastLstFunc;

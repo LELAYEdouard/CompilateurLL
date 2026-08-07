@@ -12,7 +12,7 @@ gll:
 	rm *.o var.s out.s
 
 test:
-	gcc *.c -o main.o
+	gcc *.c -o main.o -Wall
 
 	./main.o hello.ll
 

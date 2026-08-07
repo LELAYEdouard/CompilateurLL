@@ -79,6 +79,16 @@ void scanident(int c,char *str){
 
 int keyword(char *str){
     switch(*str){
+        case 'r':
+            if(!strcmp(str,"return")){
+                return T_RETURN;
+            }
+            break;
+        case 'f':
+            if(!strcmp(str,"function")){
+                return T_FUNCTION;
+            }
+            break;
         case 'b':
             if(!strcmp(str,"break")){
                 return T_BREAK;
@@ -149,6 +159,9 @@ int scan(struct token *t){
             break;
         case '*':
             t->token = T_MULT;
+            break;
+        case ',':
+            t->token = T_COMMA;
             break;
         case '/':
             t->token = T_DIV;

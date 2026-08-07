@@ -44,7 +44,6 @@ struct ASTNode* parseExpr(){
 
     if(maxBool == 0){
         left = parseBool();
-        printf("%d\n",maxBool);
     }
     if(maxBool > 1){
         printf("Error, more than one boolean statement at line %d\n",line);
@@ -139,11 +138,21 @@ struct ASTNode *parseInt(){
 
         case T_IDENTIFIER:
             int id = searchSym(Text);
-            if(id == -1){
+
+            int stackPos = searchFuncSym(Text);
+
+
+            if(id == -1 && stackPos == -1){
                 printf("Error, symbol %s doesn't exists at line %d\n",Text,line);
                 exit(1);
             }
-            n = mkleaf(A_IDENTIFIER,id);
+
+            if(id != -1){
+                n = mkleaf(A_IDENTIFIER,id);
+            }
+            else if(stackPos != -1){
+                n = mkleaf(A_FUNCIDENTIFIER,stackPos);
+            }
             break;
         
         case T_LBRACKET:

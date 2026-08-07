@@ -28,11 +28,14 @@ enum {
     T_ELSE, // else
     T_WHILE, // while
     T_BREAK, // break
+    T_RETURN, // return
+    T_FUNCTION, // function
     T_LBRACKET, // (
     T_RBRACKET, // )
     T_LCBRACKET, // {
     T_RCBRACKET, // }
     T_SEMI, // ;
+    T_COMMA, // ,
 
     T_INTTYPE, // int
     
@@ -66,6 +69,7 @@ enum {
 
     A_INTLT,
     A_IDENTIFIER,
+    A_FUNCIDENTIFIER,
 
     A_BOOLEQ, 
     A_BOOLDIFF,
@@ -77,4 +81,10 @@ enum {
 
 struct identifier {
     char *identName;
+    union{
+        int nbArgs; // function nb parameters
+        char **lstLocFunc; // local function variable
+        int lastLocFunc; // local function variable
+        int stackPos; //function parameter
+    }u;
 };

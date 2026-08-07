@@ -8,10 +8,8 @@ char *tokstr[] = {"+","-","*","/","intlt"};
 char *aritstr[] = {"+","-","*","/"};
 
 void init();
-static void scanfile();
 
 int main(int argc, char *argv[]){
-    struct ASTNode* n;
 
     if(argc != 2){
         printf("%s needs 1 ll file \n",argv[0]);
@@ -34,6 +32,15 @@ int main(int argc, char *argv[]){
     preambleASM();
 
     scan(&Token);
+    if(Token.token == T_FUNCTION){
+        match(T_FUNCTION,"function");
+        parseStatements(whileStatementNb);
+        scan(&Token);
+    }
+
+    //avoid func create
+    funcDef = 0;
+    mainASM();
     match(T_MAIN,"main");
     parseStatements(whileStatementNb);
 
@@ -47,17 +54,9 @@ void init(){
     line = 1;
     Putback = '\n';
     lastLstIdent = 0;
+    lastLstFuncParam = 0;
+    lastLstFunc = 0;
     ifStatementNb = 0;
-}
-
-static void scanfile(){
-    struct token T;
-
-    while(scan(&T)){
-        printf("Token %s",tokstr[T.token]);
-        if(T.token == T_INTLT){
-            printf(",value %d",T.intval);
-        }
-        printf("\n");
-    }
+    whileStatementNb=0;
+    funcDef=1;
 }

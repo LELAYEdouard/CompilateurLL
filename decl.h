@@ -12,6 +12,15 @@ int searchSym(char *str);
 int createSym();
 int addSym(char *str);
 
+int searchFuncSym(char *str);
+int createFuncSym();
+int addFuncSym(char *str,int stackPos);
+
+
+int searchFunc(char *str);
+int createFunc();
+int addFunc(char *str,int nbArgs);
+
 //scan
 void scanident(int c,char *str);
 int keyword(char *str);
@@ -33,6 +42,10 @@ struct ASTNode* mknode(int op,struct ASTNode *left,struct ASTNode *right,int val
 //stmt
 void parseStatements(int currentWhile);
 
+//function
+int findParameters();
+void pushParameters(int nbArgs);
+
 //genASM
 void freeReg(int reg);
 int allocateReg();
@@ -40,6 +53,7 @@ void freeAllReg();
 
 void preambleASM();
 void postambleASM();
+void mainASM();
 void variableASM();
 
 int loadASM(int val);
@@ -54,6 +68,8 @@ void printASM(int reg);
 void symbolGlobalASM(char *str);
 void storeGlobalASM(int reg,char *identifier);
 
+int loadReturnFunc();
+
 int compareForJumpASM(struct ASTNode *n,char **jump);
 
 void startwhileASM(int currentWhile);
@@ -64,6 +80,12 @@ void breakwhileASM(int currentWhile);
 void ifASM(char *jump,int currentIf);
 void elseASM(int currentIf);
 void endifASM(int currentIf);
+
+void definefuncASM(char *func);
+void endfuncASM();
+void returnASM(int reg);
+void callFuncASM(char *str,int nbArgs);
+void pushASM(int reg);
 
 int genAST(struct ASTNode *n);
 

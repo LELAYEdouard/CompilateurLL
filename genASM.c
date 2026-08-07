@@ -54,13 +54,17 @@ void preambleASM(){
         "\tnop\n"
         "\tleave\n"
         "\tret\n"
-        "\n"
+        "\n",
+    Outfile);
+}
+
+void mainASM(){
+    fputs(
         "main:\n"
         "\tpush\trbp\n"
         "\tmov	rbp, rsp\n",
     Outfile);
 }
-
 // Print out the assembly postamble
 void postambleASM(){
     fputs(
@@ -145,6 +149,19 @@ int loadGlobalASM(char *symbol){
     return reg;
 }
 
+int loadFuncGlobalASM(int stackPos){
+    int reg = allocateReg();
+    stackPos = 16 + 8*stackPos;
+    fprintf(Outfile,"\tmov\t%s, [rbp+%d]\n",reglist[reg],stackPos);
+    return reg;
+}
+
+int loadReturnFunc(){
+    int reg = allocateReg();
+    fprintf(Outfile,"\tmov\t%s, rax\n",reglist[reg]);
+    return reg;
+}
+
 int compareASM(int reg1, int reg2,char *compare){
     fprintf(Outfile, "\tcmp\t%s, %s\n", reglist[reg1], reglist[reg2]);
     fprintf(Outfile, "\t%s\t%s\n", compare, breglist[reg2]);
@@ -179,6 +196,8 @@ int compareForJumpASM(struct ASTNode *n,char **jump){
             return loadASM(n->u.intvalue);
         case A_IDENTIFIER:
             return loadGlobalASM(lstIdent[n->u.idIdent].identName);
+        case A_FUNCIDENTIFIER:
+            return loadFuncGlobalASM(lstFuncParam[n->u.idIdent].u.stackPos);
         case A_OPPOSITE:
             return subASM(left,right);
         case A_BOOLDIFF:
@@ -241,6 +260,31 @@ void endifASM(int currentIf){
     fprintf(Outfile, "\tIFend%d:\n",currentIf);
 }
 
+void definefuncASM(char *func){
+    fprintf(Outfile,"%s:\n",func);
+    fprintf(Outfile,"\tpush\trbp\n");
+    fprintf(Outfile,"\tmov\trbp, rsp\n");
+}
+
+void endfuncASM(){
+    fprintf(Outfile,"\tpop\trbp\n");
+    fprintf(Outfile,"\tret\n");
+}
+
+void returnASM(int reg){
+    fprintf(Outfile,"\tmov rax, %s\n",reglist[reg]);
+}
+
+void callFuncASM(char *str,int nbArgs){
+    fprintf(Outfile,"\tcall %s\n",str);
+    fprintf(Outfile,"\tadd rsp, %d\n",nbArgs*8);
+}
+
+void pushASM(int reg){
+    fprintf(Outfile,"\tpush %s\n",reglist[reg]);
+    freeReg(reg);
+}
+
 //gen code from an AST
 int genAST(struct ASTNode *n){
     int left,right=0;
@@ -264,6 +308,8 @@ int genAST(struct ASTNode *n){
             return loadASM(n->u.intvalue);
         case A_IDENTIFIER:
             return loadGlobalASM(lstIdent[n->u.idIdent].identName);
+        case A_FUNCIDENTIFIER:
+            return loadFuncGlobalASM(lstFuncParam[n->u.idIdent].u.stackPos);
         case A_OPPOSITE:
             return subASM(left,right);
         case A_BOOLDIFF:
